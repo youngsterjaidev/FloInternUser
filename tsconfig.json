@@ -2,6 +2,18 @@
     "compilerOptions": {
         "watch": true,
         "target": "ES5",
-        "outDir": "./js/"
-    }
+        "outDir": "./js/",
+        "allowJs": true,
+        "lib": [
+            "es2015",
+            "DOM"
+        ]
+    },
+    "include": [
+        "main.ts",
+        "js/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }
