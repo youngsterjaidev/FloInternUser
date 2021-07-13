@@ -102,94 +102,147 @@ const main = (): void => {
         }
     ]
 
-    const renderUserLisit = (): void => {
-        // render the users in DOM for first load
-        for (let i: number = 0; i < floUserList.length; i++) {
-            // destructure the keys 
-            let { floId, floUserName, project } = floUserList[i]
+class Card extends HTMLElement {
+    shadow: any
+    floid: string
+    flousername: string
 
-            // creating the html ELement
-            let el: HTMLAnchorElement = document.createElement("a")
-            el.href = `/intern.html/?${floId}`
-
-            el.innerHTML = `
-            <div class="card-heading">${floUserName}</div>
-            <div>${floId}</div>
-            <div>${project}</div>
-        `
-            // add the styling to the Element
-            el.className = "card"
-
-            // add the element to the root
-            _rootElement.appendChild(el)
-
-        }
+    constructor() {
+        super()
+        this.shadow = this.attachShadow({ mode: "open" })
     }
 
-    /**
-     * create a card list with the given list
-     */
+    async openPop() {
+        let detail = this.shadow.querySelector("#transaction")
+        let content = this.shadow.getElementById("content")
+        let searchNav = this.shadow.getElementById("searchNav")
+        let isOpen = detail.style.display === "block"
 
-    const generateCard = (list: any): void => {
-
-        for (let i: number = 0; i < list.length; i++) {
-
-            // destructure all the keys
-            let { floUserName, floId, project } = list[i]
-
-            let el: HTMLAnchorElement = document.createElement("a")
-            // stye the element
-            el.className = "card"
-
-            // fill the values in it
-            el.innerHTML = `
-            <div class="card-heading">${floUserName}</div>
-            <div>${floId}</div>
-            <div>${project}</div>
-        `
-            _rootElement.appendChild(el)
-        }
-
-    }
-
-    // search function
-    const searchName = (e: any): any => {
-
-        // Prevent from page loading
-        let floName: string = e.target.value
-
-        // clear the list
-        _rootElement.innerHTML = ""
-
-        // show the loading indicator
-        _rootElement.innerHTML = "<h1>Loading</h1>"
-
-        const result: Array<{
-            floUserName: string,
-            floId: string,
-            project: string
-        }> = floUserList.filter((user: User): boolean => {
-            let newUserName = user.floUserName.slice(0, floName.length)
-            return newUserName === floName
-        })
-
-        // clear the Loading
-        _rootElement.innerHTML = ""
-
-        if (result.length === 0) {
-            // clear all the search result
-            renderUserLisit()
+        if (isOpen) {
+            detail.style.display = "none"
         } else {
-            // fill the info the element
-            generateCard(result)
+            detail.style.display = "block"
+            let isReady = false
+            searchNav.disabled = !isReady
+            content.innerHTML = `
+                        <h1 style="text-align: center;">Wait a sec !</h1> 
+                    `
+
+            try {
+                /* uri is always be a string */
+                let uri: string = `https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressTransactions?floAddress=${this.floid}`
+
+                /* It will be a response */
+                let res: Response = await fetch(uri)
+
+                /* get the json data from the response */
+                let data = await res.json()
+                console.log(data)
+                content.innerHTML = ``
+                if (data.result === "error") {
+                    content.innerHTML = `<div style="text-align: center;">${data.description}</div>`
+                }
+                if (data.result === 'ok') {
+                    Object.keys(data.transactions).map((index) => {
+                        let { parsedFloData } = data.transactions[index]
+                        const li: HTMLLIElement = document.createElement("li")
+                        li.innerHTML = `
+                            <li style="margin: 1em 0em;">
+                                <div>${parsedFloData.flodata}</div>
+                                <div style="
+                                    background:#ffb6b6;
+                                    color: #000;
+                                    padding: 0.2em 0.4em;
+                                    border-radius: 5px;
+                                ">FThgnJLcuStugLc24FJQggmp2WgaZjrBSn - ${this.floid}</div>
+                                <div style="color: green; margin: 0.5em 0em;">RS. ${parsedFloData.tokenAmount}.00</div>
+                            </li>
+                        `
+
+                        content.appendChild(li)
+                    })
+                }
+            } catch (e) {
+                // ERROR HANDLING
+                console.log("Error Occured while fetching the User Data : ", e)
+            }
         }
     }
 
-    _searchInput.addEventListener("input", searchName)
+    connectedCallback(): void {
+        // get the template
+        const template: HTMLTemplateElement = document.querySelector("template")
 
-    // set the data of the flo user list
-    renderUserLisit()
+        /* node will always be document fragment */
+        const node: DocumentFragment = document.importNode(template.content, true)
 
+        // Attach node to the Shadow DOM of element
+        this.shadow.appendChild(node)
+
+        /* Container will be a HTML Element */
+        let container = this.shadow.querySelector(".container")
+
+        // setting the info to the shadow DOM of element
+        this.shadow.getElementById("floId").innerText = this.flousername
+        this.shadow.getElementById("floUserName").innerText = this.floid
+
+        // settting click event listener on the element
+        container.addEventListener("click", this.openPop.bind(this))
+    }
+}
+
+
+customElements.define("my-card", Card)
+
+floUserList.forEach(i => {
+    let card: HTMLElement = document.createElement("my-card")
+    card.floid = i.floId
+    card.flousername = i.floUserName
+
+    _rootElement.appendChild(card)
+})
+
+
+const searchName = (e: any) => {
+
+    // Prevent from page loading
+    let floName: string = e.target.value
+
+    // clear the list
+    _rootElement.innerHTML = ""
+
+    // show the loading indicator
+    _rootElement.innerHTML = "<h1>Loading</h1>"
+
+    const result = floUserList.filter((user) => {
+        let newUserName = user.floUserName.slice(0, floName.length)
+        return newUserName.toLowerCase() === floName.toLowerCase()
+    })
+
+    // clear the Loading
+    _rootElement.innerHTML = ""
+
+    if (result.length === 0) {
+        floUserList.forEach(i => {
+            let card: HTMLElement = document.createElement("my-card")
+            card.floid = i.floId
+            card.flousername = i.floUserName
+            console.log(card)
+            _rootElement.appendChild(card)
+        })
+    } else {
+        result.forEach(i => {
+            let card: HTMLElement = document.createElement("my-card")
+            card.floid = i.floId
+            card.flousername = i.floUserName
+            console.log(card)
+            _rootElement.appendChild(card)
+        })
+    }
+}
+
+// set the input Event Listener
+_searchInput.addEventListener("input", searchName)
 }
 
 // call the main function

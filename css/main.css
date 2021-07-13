@@ -45,6 +45,7 @@ input {
     text-decoration: none;
     display: block;
     width: 100%;
+    height: auto;
 }
 
 .card:hover {
