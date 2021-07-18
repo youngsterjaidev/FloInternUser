@@ -1,19 +1,11 @@
 {
     "compilerOptions": {
-        "watch": true,
-        "target": "ES6",
-        "outDir": "./js/",
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "es6",
+        "target": "es5",
+        "jsx": "react",
         "allowJs": true,
-        "lib": [
-            "es2015",
-            "DOM"
-        ]
-    },
-    "include": [
-        "main.ts",
-        "js/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+        "moduleResolution": "node"
+    }
 }
