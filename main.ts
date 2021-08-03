@@ -130,9 +130,12 @@ interface User {
         connectedCallback() {
             this.innerHTML = `
                 <div class="card">
+                    <div></div>
+                    <div>
                     <div>${this.floid}</div> 
                     <div>${this.flousername}</div> 
                     <div>${this.project}</div> 
+                    </div>
                 </div> 
             `
             this.addEventListener("click", (e) => {
@@ -236,7 +239,7 @@ interface User {
                         // fill the element
                         li.innerHTML = `
                         <div>Message: ${flodata}</div> 
-                        <div>Amount: RS.${tokenAmount}.00</div> `
+                        <div><div>RS.${tokenAmount}.00/-</div></div> `
 
                         // add it to the div element we created previously
                         el.appendChild(li)
