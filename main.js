@@ -131,6 +131,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             this.addEventListener("click", (e) => {
                 window.history.pushState({
                     floid: this.floid,
+                    flousername: this.flousername,
                     message: "Detail Page active"
                 }, "detail", window.location.origin + "/detail");
                 console.log(window.location.pathname);
@@ -140,7 +141,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
     customElements.define("rn-detail", class RnDetail extends HTMLElement {
         constructor() {
-            super(...arguments);
+            super();
             /**
              * @param id the floId of the User
              */
@@ -149,13 +150,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     let uri = `https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressTransactions?floAddress=${id}`;
                     let res = yield fetch(uri);
                     let data = yield res.json();
+                    console.log(data);
                     this.render(data);
                 }
                 catch (e) {
                     // ERROR HANDLING
                     console.log("Error Occured while fetching the User Data : ", e);
+                    this.innerHTML = `<h3 style="
+                    text-align: center;
+                    color: red; 
+                ">Something went Wrong! Please check the network</h3>`;
                 }
             });
+            this.floId = "";
+            this.floUserName = "";
         }
         // get the value of the attribute
         get data() {
@@ -183,6 +191,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
              * Passing the floId get from the state
              */
             this._getTransactionDetail(window.history.state.floid);
+            console.log(window.history.state);
+            this.floId = window.history.state.floid;
+            this.floUserName = window.history.state.flousername;
             // update the render function
             this.render();
         }
@@ -201,26 +212,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     Object.keys(data.transactions).map((index) => {
                         // get the data form the transactions
                         let { parsedFloData, transactionDetails } = data.transactions[index];
-                        // set the transaction data to data attribute
-                        this.setAttribute("data", parsedFloData);
-                        // destructure the floData and token amount
-                        // from the transaction Data
-                        const { flodata, tokenAmount } = parsedFloData;
-                        // create a new div element
-                        let li = document.createElement("div");
-                        // addding the some style by adding class
-                        li.classList.add("list");
-                        // fill the element
-                        li.innerHTML = `
-                        <div>Message: ${flodata}</div> 
-                        <div><div>RS.${tokenAmount}.00/-</div></div> `;
-                        // add it to the div element we created previously
-                        el.appendChild(li);
+                        let distributionId = transactionDetails.vin[0].addr === "FThgnJLcuStugLc24FJQggmp2WgaZjrBSn";
+                        if (distributionId) {
+                            // set the transaction data to data attribute
+                            this.setAttribute("data", parsedFloData);
+                            // destructure the floData and token amount
+                            // from the transaction Data
+                            const { flodata, tokenAmount } = parsedFloData;
+                            // create a new div element
+                            let li = document.createElement("div");
+                            // addding the some style by adding class
+                            li.classList.add("list");
+                            // fill the element
+                            li.innerHTML = `
+                                <div>Message: ${flodata}</div> 
+                                <div><div>RS.${tokenAmount}.00/-</div></div> `;
+                            // add it to the div element we created previously
+                            el.appendChild(li);
+                        }
                     });
+                }
+                else {
+                    el.innerHTML = `<h3 style="
+                        text-align: center;
+                        color: red;
+                    ">No Transaction yet!</h3>
+                    <a href="/">Go to Home</a>
+                    `;
                 }
                 // add the heading the element
                 this.innerHTML = `
-                    <h2 style="text-align: center;">Transaction Details</h2> 
+                    <div style="
+                        text-align: center;
+                        padding: 0.5em;
+                        background: #fff; 
+                    ">
+                    <h2>Transaction Details</h2> 
+                    <div>Name: <b>${this.floUserName}</b></div>
+                    <div>FloId: <b>${this.floId}</b></div>
+                    </div>
                 `;
                 // add the all the complete node to element
                 this.appendChild(el);
@@ -268,6 +298,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         "/": indexPage.innerHTML,
         "/detail": detailPage
     };
+    const backFunction = () => {
+        // return back the home page by pushing the history
+        // with "/" route
+        window.history.pushState({}, "/", window.location.origin + "/");
+        // add the indexPage element to the page
+        _rootDiv.innerHTML = routes["/"];
+    };
     /**
      * Run when there is change input value
      * - Get the input value from the event
@@ -297,6 +334,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 el.setAttribute("project", user.project);
                 let div = document.createElement("div");
                 div.appendChild(el);
+                window.history.pushState({}, "/", window.location.origin + "/");
                 _rootDiv.appendChild(div);
             });
         }
@@ -310,19 +348,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 el.setAttribute("project", user.project);
                 div.appendChild(el);
             });
+            window.history.pushState({}, "/", window.location.origin + "/");
             _rootDiv.innerHTML = div.innerHTML;
         }
     };
     // adding the input event to Input element
-    _input.addEventListener("input", _changeInput);
+    _input === null || _input === void 0 ? void 0 : _input.addEventListener("input", _changeInput);
     // backBtn listen for the click event
-    _backBtn.addEventListener("click", e => {
-        // return back the home page by pushing the history
-        // with "/" route
-        window.history.pushState({}, "/", window.location.origin + "/");
-        // add the indexPage element to the page
-        _rootDiv.innerHTML = routes["/"];
-    });
+    _backBtn === null || _backBtn === void 0 ? void 0 : _backBtn.addEventListener("click", backFunction);
     // settting the default element 
     _rootDiv.innerHTML = routes["/"];
 })();
