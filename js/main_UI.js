@@ -96,7 +96,7 @@ class Stack {
     }
     pop() {
         if (this.items.length == 0)
-        return "Underflow";
+            return "Underflow";
         return this.items.pop();
     }
     peek() {
@@ -273,7 +273,7 @@ function showPage(targetPage, options = {}) {
     else {
         pageId = targetPage.includes('#') ? targetPage.split('#')[1] : targetPage
     }
-    if(!appPages.includes(pageId)) return
+    if (!appPages.includes(pageId)) return
     document.querySelector('.page:not(.hide-completely)').classList.add('hide-completely')
     document.querySelector('.nav-list__item--active').classList.remove('nav-list__item--active')
     getRef(pageId).classList.remove('hide-completely')
