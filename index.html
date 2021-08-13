@@ -49,7 +49,7 @@
                     <h4>Flo Intern Data</h4>
                 </div>
             </div>
-            <sm-input placeholder="Search" type="search"></sm-input>
+            <sm-input placeholder="Search" id="input" type="search"></sm-input>
             <theme-toggle></theme-toggle>
         </header>
 
@@ -70,7 +70,16 @@
 
             //Required for blockchain API operators
             apiURL: {
-                FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                /*FLO: [
+                    'https://livenet.flocha.in/', 
+                    'https://flosight.duckdns.org/'
+                ],*/
+                FLO: [
+                        "https://explorer.mediciland.com/",
+                        "https://livenet.flocha.in/",
+                        "https://flosight.duckdns.org/",
+                        "http://livenet-explorer.floexperiments.com/",
+                    ],
                 FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
             },
             adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
